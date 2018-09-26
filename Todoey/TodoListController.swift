@@ -11,9 +11,16 @@ import UIKit
 class TodoListViewController: UITableViewController {
     
     var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
+    
+    let defaults =  UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Add the local storage saved array to the itemArray array to populate what was saved before app gets terminated
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items
+        }
         
     }
     
@@ -72,6 +79,9 @@ class TodoListViewController: UITableViewController {
             
             // What will happend once the user clicks the action button on the UIAlert
             if textField.text != "" { self.itemArray.append(textField.text!) }
+            
+            // Add the array to the local storage
+            self.defaults.set(self.itemArray, forKey: "TodoListArray")
             
             self.tableView.reloadData()
             
