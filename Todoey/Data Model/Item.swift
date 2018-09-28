@@ -8,7 +8,8 @@
 
 import Foundation
 
-class Item {
+// make the class encodable (All properties has to be common datatypes)
+class Item : Codable {
     
     var title : String = ""
     var done : Bool

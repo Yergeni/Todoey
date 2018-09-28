@@ -12,8 +12,8 @@ class TodoListViewController: UITableViewController {
     
     var itemArray = [Item]()
     
-    // local storage
-    let defaults =  UserDefaults.standard
+    // get the local directory on the device
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,10 +25,7 @@ class TodoListViewController: UITableViewController {
         let newItem1 = Item(aTitle: "Watch Movie")
         itemArray.append(newItem1)
         
-        // Add the local storage saved array to the itemArray array to populate what was saved before app gets terminated
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-            itemArray = items
-        }
+        loadItems()
         
     }
     
@@ -58,6 +55,8 @@ class TodoListViewController: UITableViewController {
         
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
+        saveItems() // to safe the done property (saving the array)
+        
         tableView.reloadData()
         
         // Deselect row inmediatelly
@@ -79,9 +78,8 @@ class TodoListViewController: UITableViewController {
             // What will happend once the user clicks the action button on the UIAlert
             if textField.text != "" { self.itemArray.append(Item(aTitle: textField.text!)) }
             
-            // Add the array to the local storage
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
-            
+            self.saveItems() // save the title (saving the array)
+          
             self.tableView.reloadData()
             
         }
@@ -99,6 +97,35 @@ class TodoListViewController: UITableViewController {
         
         // show the alert
         present(alert, animated: true, completion: nil)
+    }
+    
+    
+    // MARK: - Model Manipulation Methods
+    func saveItems() {
+        
+        // create an encoder to convert datatypes instances to encoder lists
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item arra, \(error)")
+        }
+    }
+    
+    func loadItems() {
+        
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("Error decoding item array \(error)")
+            }
+        }
+        
     }
     
 
